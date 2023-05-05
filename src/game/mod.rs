@@ -6,10 +6,12 @@ mod systems;
 mod tetromino;
 pub mod timer;
 use systems::*;
+mod global;
 mod style;
 
 use self::{
-    components::{GameDisplay, PausedLayout},
+    components::{GameArea, GameDisplay, PausedLayout},
+    matrix::Matrix,
     systems::{
         interactions::paused_button_actions,
         paused::{is_game_resumed_or_new, is_game_resumed_or_new_or_paused},
@@ -23,11 +25,26 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
+        // init matrix;
+        let matrix = Matrix::default();
+        app.insert_resource(matrix);
         // init game page
         app.add_system(setup_game::setup_game.in_schedule(OnEnter(GameState::New)));
+        // init board area
+        // init right area (Score, Next shape...)
+        app.add_systems(
+            (
+                layout::spawn_board_system,
+                layout::spawn_bg_block_system,
+                layout::spawn_right_system,
+            )
+                .chain()
+                .in_schedule(OnEnter(GameState::New)),
+        );
 
         // despawn game page when exit
         app.add_system(despawn_components::<GameDisplay>.in_schedule(OnExit(AppState::Game)));
+        app.add_system(despawn_components::<GameArea>.in_schedule(OnExit(AppState::Game)));
 
         // movement in game state with new or resumed
         app.add_system(
@@ -60,8 +77,8 @@ impl Plugin for GamePlugin {
 
 #[derive(States, Clone, Copy, PartialEq, Eq, Debug, Default, Hash)]
 pub enum GameState {
-    #[default]
     None,
+    #[default]
     New,
     Resume,
     Paused,

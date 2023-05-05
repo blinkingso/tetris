@@ -2,16 +2,16 @@
 
 use crate::game::tetromino::TetrominoType;
 use bevy::prelude::{Plugin, Resource};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Resource)]
-pub struct ImagePathResources(HashMap<TetrominoType, &'static str>);
+pub struct ImagePathResources(BTreeMap<TetrominoType, &'static str>);
 
 pub struct ImageLoadPlugin;
 
 impl Plugin for ImageLoadPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        let mut map = HashMap::with_capacity(7);
+        let mut map = BTreeMap::new();
         map.insert(TetrominoType::I, "red.png");
         map.insert(TetrominoType::J, "orange.png");
         map.insert(TetrominoType::L, "yellow.png");
@@ -35,7 +35,13 @@ impl ImagePathResources {
     }
 
     /// A function to get collections of resources
-    pub fn hgetall(&self) -> &HashMap<TetrominoType, &'static str> {
+    pub fn hgetall(&self) -> &BTreeMap<TetrominoType, &'static str> {
         &self.0
     }
+}
+
+#[derive(Resource)]
+pub struct Score {
+    pub value: usize,
+    pub cleared_lines: HashMap<&'static str, u32>,
 }
