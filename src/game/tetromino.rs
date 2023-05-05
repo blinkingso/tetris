@@ -57,7 +57,7 @@ pub fn get_pieces_data(ty: TetrominoType) -> Vec<u8> {
     }
 }
 
-pub fn get_offset_data(rotation: Rotation, ty: TetrominoType) -> Vec<(i8, i8)> {
+pub fn get_offset_data(_rotation: Rotation, _ty: TetrominoType) -> Vec<(i8, i8)> {
     todo!()
 }
 

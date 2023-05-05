@@ -38,5 +38,5 @@ impl Default for Matrix {
 }
 
 impl Matrix {
-    pub fn check_collision(pos: &MatrixPosition) {}
+    pub fn check_collision(_pos: &MatrixPosition) {}
 }
