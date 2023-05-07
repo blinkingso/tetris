@@ -10,12 +10,12 @@ mod global;
 mod style;
 
 use self::{
-    components::{GameArea, GameDisplay, MatrixPosition, PausedLayout},
+    components::{Block, GameArea, GameDisplay, GameOverLayout, MatrixPosition, PausedLayout},
     matrix::Matrix,
     resources::{HoldOnQueueResoure, StartPosition},
     systems::{
-        interactions::paused_button_actions,
-        minos::spawn_current_tetromino,
+        interactions::{game_over_button_actions, paused_button_actions},
+        minos::{spawn_current_tetromino, update_block_system},
         paused::{is_game_resumed_or_new, is_game_resumed_or_new_or_paused},
     },
 };
@@ -27,15 +27,16 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        // init matrix;
         let matrix = Matrix::default();
-        let start_pos = StartPosition(MatrixPosition { x: 4, y: 0 });
+        let start_pos = StartPosition(MatrixPosition { x: 3, y: 0 });
         let hold_on_queue = HoldOnQueueResoure::new(&start_pos);
         app.insert_resource(start_pos);
         app.insert_resource(hold_on_queue);
         app.insert_resource(matrix);
         // init game page
         app.add_system(setup_game::setup_game.in_schedule(OnEnter(GameState::New)));
+        // enter game over page
+        app.add_system(layout::spawn_game_over_layout_system.in_schedule(OnEnter(GameState::Over)));
         // init board area
         // init right area (Score, Next shape...)
         app.add_systems(
@@ -59,9 +60,21 @@ impl Plugin for GamePlugin {
                 .run_if(is_game_resumed_or_new),
         );
 
+        // update tetromino blocks
+        app.add_system(
+            update_block_system
+                .in_set(OnUpdate(AppState::Game))
+                .run_if(is_game_resumed_or_new),
+        );
+
         // movement in game state with new or resumed
         app.add_system(
-            movement::movement_system
+            movement::movement_vertical_system
+                .in_set(OnUpdate(AppState::Game))
+                .run_if(is_game_resumed_or_new),
+        );
+        app.add_system(
+            movement::move_horizontal_system
                 .in_set(OnUpdate(AppState::Game))
                 .run_if(is_game_resumed_or_new),
         );
@@ -79,12 +92,18 @@ impl Plugin for GamePlugin {
 
         // Paused interactions running when paused
         app.add_system(paused_button_actions.in_set(OnUpdate(GameState::Paused)));
+        app.add_system(game_over_button_actions.in_set(OnUpdate(GameState::Over)));
 
         // hover buttons system
-        app.add_system(button_system.in_set(OnUpdate(GameState::Paused)));
+        app.add_system(button_system.run_if(is_paused_or_over));
 
         // despawn paused layout when exit `GameState::paused`
         app.add_system(despawn_components::<PausedLayout>.in_schedule(OnExit(GameState::Paused)));
+        // despawn all entity in GameState on exit GameOver State
+        app.add_system(despawn_components::<GameDisplay>.in_schedule(OnExit(GameState::Over)));
+        app.add_system(despawn_components::<Block>.in_schedule(OnExit(GameState::Over)));
+        app.add_system(despawn_components::<GameOverLayout>.in_schedule(OnExit(GameState::Over)));
+        app.add_system(despawn_components::<GameArea>.in_schedule(OnExit(GameState::Over)));
     }
 }
 
@@ -96,4 +115,8 @@ pub enum GameState {
     Resume,
     Paused,
     Over,
+}
+
+pub fn is_paused_or_over(game_state: Res<State<GameState>>) -> bool {
+    game_state.0 == GameState::Paused || game_state.0 == GameState::Over
 }

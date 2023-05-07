@@ -2,7 +2,9 @@
 use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
-use crate::game::components::{GameArea, PausedButtonAction, PausedLayout};
+use crate::game::components::{
+    GameArea, GameOverButtonAction, GameOverLayout, PausedButtonAction, PausedLayout,
+};
 use crate::game::global::{
     BLOCK_SIZE, BLOCK_SPACE, BORDER_SIZE, RIGHT_WIDTH, SEPARATE, WHITESPACE_WIDTH,
 };
@@ -10,6 +12,7 @@ use crate::game::matrix::Matrix;
 use crate::game::style::{
     get_game_label_text_style, get_game_text_style, PAUSED_LAYOUT_BACKGROUND_COLOR, TEXT_FONT_SIZE,
 };
+use crate::ui::components::MainMenu;
 use crate::ui::style::{get_text_style, get_title_text_style, BUTTON_STYLE, NORMAL_BUTTON};
 
 /// Spawn game background area.
@@ -455,6 +458,104 @@ pub fn spawn_pause_layout_system(mut commands: Commands, asset_server: Res<Asset
                         ..Default::default()
                     },
                     PausedButtonAction::Exit,
+                ))
+                .with_children(|parent| {
+                    parent.spawn(TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new("Exit", get_text_style(&asset_server))],
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    });
+                });
+        });
+}
+
+pub fn spawn_game_over_layout_system(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                    ..Default::default()
+                },
+                background_color: BackgroundColor::from(PAUSED_LAYOUT_BACKGROUND_COLOR),
+                ..Default::default()
+            },
+            GameOverLayout,
+        ))
+        .with_children(|parent| {
+            parent.spawn(TextBundle {
+                text: Text {
+                    sections: vec![TextSection::new(
+                        "Your Game is Over",
+                        get_title_text_style(&asset_server),
+                    )],
+                    alignment: TextAlignment::Center,
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+        })
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    ButtonBundle {
+                        style: BUTTON_STYLE,
+                        background_color: NORMAL_BUTTON.into(),
+                        ..Default::default()
+                    },
+                    GameOverButtonAction::Renew,
+                ))
+                .with_children(|parent| {
+                    parent.spawn(TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new(
+                                "Renew",
+                                get_text_style(&asset_server),
+                            )],
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    });
+                });
+        })
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    ButtonBundle {
+                        style: BUTTON_STYLE,
+                        background_color: NORMAL_BUTTON.into(),
+                        ..Default::default()
+                    },
+                    GameOverButtonAction::MainMenu,
+                ))
+                .with_children(|parent| {
+                    parent.spawn(TextBundle {
+                        text: Text {
+                            sections: vec![TextSection::new(
+                                "MainMenu",
+                                get_text_style(&asset_server),
+                            )],
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    });
+                });
+        })
+        .with_children(|parent| {
+            parent
+                .spawn((
+                    ButtonBundle {
+                        style: BUTTON_STYLE,
+                        background_color: NORMAL_BUTTON.into(),
+                        ..Default::default()
+                    },
+                    GameOverButtonAction::Exit,
                 ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle {

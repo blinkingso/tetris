@@ -3,9 +3,9 @@
 use bevy::prelude::Color;
 use rand::{distributions::Standard, prelude::Distribution, Rng};
 
-use super::components::{MatrixPosition, MinoBlock};
+use super::components::{Block, MatrixPosition};
 
-const SHAPE_I: [[u8; 4]; 4] = [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]];
+const SHAPE_I: [[u8; 4]; 4] = [[1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 
 type Tt = [[u8; 3]; 3];
 
@@ -225,13 +225,13 @@ impl Tetromino {
     }
 
     /// Get all tetromino blocks in separate model.
-    pub fn get_blocks(&self) -> Vec<MinoBlock> {
+    pub fn get_blocks(&self) -> Vec<Block> {
         let row = (self.pieces_data.len() as f32).sqrt() as usize;
         self.pieces_data
             .iter()
             .enumerate()
             .filter_map(|(index, val)| if *val != 0 { Some(index) } else { None })
-            .map(|index| MinoBlock {
+            .map(|index| Block {
                 position: MatrixPosition {
                     x: (index % row) as i32,
                     y: (index / row) as i32,

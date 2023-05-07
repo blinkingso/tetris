@@ -40,7 +40,7 @@ pub fn get_matrix_size() -> (f32, f32) {
 }
 
 pub fn get_falling_speed(level: usize) -> f32 {
-    0.8 * ((level - 1) as f32 * 0.007)
+    0.8 - ((level - 1) as f32 * 0.007)
 }
 
 /// Calculate scores

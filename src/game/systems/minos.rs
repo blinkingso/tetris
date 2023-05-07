@@ -1,15 +1,16 @@
 //! Spawn current Tetromino
 
-use bevy::{
-    prelude::*,
-    sprite::{Anchor},
-};
+use std::time::Duration;
+
+use bevy::{prelude::*, sprite::Anchor};
 
 use crate::game::{
-    components::{CurrentTetromino, MatrixPosition},
-    global::{get_falling_speed, BLOCK_SIZE},
+    components::{
+        Block, CurrentTetromino, GameArea, HoldQueueTetromino, MatrixPosition, UpdateBlock,
+    },
+    global::{get_falling_speed, BLOCK_SIZE, BLOCK_SPACE},
     matrix::Matrix,
-    resources::{HoldOnQueueResoure, ImagePathResources, StartPosition},
+    resources::{HoldOnQueueResoure, ImagePathResources},
     timer::SoftDropTimer,
 };
 
@@ -19,26 +20,25 @@ pub fn spawn_current_tetromino(
     image_resource: Res<ImagePathResources>,
     mut matrix: ResMut<Matrix>,
     mut soft_drop_timer: ResMut<SoftDropTimer>,
-    _start_pos: Res<StartPosition>,
     mut hold_on_queue: ResMut<HoldOnQueueResoure>,
     asset_server: Res<AssetServer>,
     mut texture_atlas: ResMut<Assets<TextureAtlas>>,
-    _meshes: ResMut<Assets<Mesh>>,
-    _materials: ResMut<Assets<ColorMaterial>>,
+    query_hold_on_queue: Query<Entity, With<HoldQueueTetromino>>,
 ) {
     if !matrix.active {
         return;
     }
 
-    let _falling_speed = get_falling_speed(matrix.level);
+    let falling_speed = get_falling_speed(matrix.level);
 
+    soft_drop_timer
+        .timer
+        .set_duration(Duration::from_secs_f32(falling_speed));
     soft_drop_timer.timer.reset();
-    // soft_drop_timer
-    //     .timer
-    //     .set_elapsed(Duration::from_secs_f32(falling_speed));
-    // soft_drop_timer
-    //     .timer
-    //     .set_duration(Duration::from_secs_f32(falling_speed));
+
+    soft_drop_timer
+        .timer
+        .set_elapsed(Duration::from_secs_f32(falling_speed));
 
     let tetromino = hold_on_queue.pop_push();
     let image = asset_server.load(image_resource.get_path(tetromino.ty));
@@ -51,25 +51,11 @@ pub fn spawn_current_tetromino(
             x: block.position.x + tetromino.position.x,
             y: block.position.y + tetromino.position.y,
         };
-        let (x, y) = matrix.get_grid_position(position);
-        // commands
-        //     .spawn(SpriteBundle {
-        //         sprite: Sprite {
-        //             custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
-        //             // color: get_block_color(i.into()),
-        //             anchor: Anchor::TopLeft,
-        //             ..default()
-        //         },
-        //         texture: image.clone(),
-        //         transform: Transform::from_xyz(x, y, 0.0),
-        //         ..default()
-        //     })
-        //     .insert(CurrentTetromino);
+        let (x, y) = matrix.get_translation(position);
         commands
             .spawn(SpriteSheetBundle {
                 sprite: TextureAtlasSprite {
                     custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
-                    // color: get_block_color(i.into()),
                     anchor: Anchor::TopLeft,
                     ..default()
                 },
@@ -77,25 +63,54 @@ pub fn spawn_current_tetromino(
                 transform: Transform::from_xyz(x, y, 0.0),
                 ..default()
             })
-            .insert(CurrentTetromino);
-        // commands
-        //     .spawn(MaterialMesh2dBundle {
-        //         mesh: meshes
-        //             .add(Mesh::from(shape::Quad::new(Vec2::new(
-        //                 BLOCK_SIZE, BLOCK_SIZE,
-        //             ))))
-        //             .into(),
-        //         material: materials
-        //             .add(ColorMaterial {
-        //                 texture: Some(image.clone()),
-        //                 ..default()
-        //             })
-        //             .into(),
-        //         transform: Transform::from_xyz(x, y, 0.0),
-        //         ..default()
-        //     })
-        //     .insert(CurrentTetromino);
+            .insert(CurrentTetromino)
+            .insert(Block { position });
+    }
+
+    for entity in query_hold_on_queue.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+
+    // spawn next tetromino
+    let next_tetromino = hold_on_queue.first();
+    if let Some(next_tetromino) = next_tetromino {
+        let image = asset_server.load(image_resource.get_path(next_tetromino.ty));
+        let ta =
+            TextureAtlas::from_grid(image, Vec2::new(BLOCK_SIZE, BLOCK_SIZE), 1, 1, None, None);
+        let blocks = next_tetromino.get_blocks();
+        for block in blocks.iter() {
+            let position = MatrixPosition {
+                x: block.position.x + 12,
+                y: block.position.y + 1,
+            };
+            let (x, y) = matrix.get_translation(position);
+            commands
+                .spawn(SpriteSheetBundle {
+                    sprite: TextureAtlasSprite {
+                        custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                        anchor: Anchor::TopLeft,
+                        ..default()
+                    },
+                    texture_atlas: texture_atlas.add(ta.clone()).into(),
+                    transform: Transform::from_xyz(x, y, 0.0),
+                    ..default()
+                })
+                .insert(HoldQueueTetromino)
+                .insert(GameArea::HoldOnQueue);
+        }
     }
 
     matrix.active = false;
+}
+
+pub fn update_block_system(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut Transform, &Block), With<UpdateBlock>>,
+    matrix: Res<Matrix>,
+) {
+    for (entity, mut transform, block) in query.iter_mut() {
+        let (x, y) = matrix.get_translation(block.position);
+        transform.translation = Vec3::new(x, y, 0.0);
+        commands.entity(entity).remove::<UpdateBlock>();
+    }
 }

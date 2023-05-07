@@ -62,7 +62,7 @@ impl HoldOnQueueResoure {
         let mut values = LinkedList::new();
         for _ in 0..5 {
             let new = Tetromino::new(start_position.0.clone());
-            values.push_back(new);
+            values.push_front(new);
         }
         HoldOnQueueResoure {
             start_pos: start_position.0.clone(),
@@ -72,12 +72,13 @@ impl HoldOnQueueResoure {
 
     pub fn pop_push(&mut self) -> Tetromino {
         let new = Tetromino::new(self.start_pos);
-        return if self.values.is_empty() {
-            new
-        } else {
-            self.values.push_back(new);
-            self.values.pop_front().unwrap()
-        };
+        let value = self.values.pop_front();
+        self.values.push_back(new);
+        value.unwrap()
+    }
+
+    pub fn first(&self) -> Option<&Tetromino> {
+        self.values.front()
     }
 }
 

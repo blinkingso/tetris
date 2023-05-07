@@ -2,11 +2,20 @@ use bevy::prelude::Component;
 
 #[derive(Component)]
 pub struct PausedLayout;
+#[derive(Component)]
+pub struct GameOverLayout;
 
 #[derive(Component)]
 pub enum PausedButtonAction {
     Continue,
     Renew,
+    Exit,
+}
+
+#[derive(Component)]
+pub enum GameOverButtonAction {
+    Renew,
+    MainMenu,
     Exit,
 }
 
@@ -44,12 +53,15 @@ pub struct MatrixPosition {
 }
 
 #[derive(Component)]
-pub struct MinoBlock {
+pub struct Block {
     pub position: MatrixPosition,
 }
 
 #[derive(Component)]
-pub struct UpdateMinoBlock;
+pub struct UpdateBlock;
 
 #[derive(Component)]
 pub struct TetrominoPosition(pub MatrixPosition);
+
+#[derive(Component)]
+pub struct HeapBlock;
