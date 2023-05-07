@@ -4,7 +4,7 @@ use crate::game::tetromino::TetrominoType;
 use bevy::prelude::{Plugin, Resource};
 use std::collections::{BTreeMap, HashMap, LinkedList};
 
-use super::{components::MatrixPosition, matrix::Matrix, tetromino::Tetromino};
+use super::{components::MatrixPosition, tetromino::Tetromino};
 
 #[derive(Resource)]
 pub struct ImagePathResources(BTreeMap<TetrominoType, &'static str>);

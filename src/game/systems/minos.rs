@@ -2,7 +2,7 @@
 
 use bevy::{
     prelude::*,
-    sprite::{Anchor, MaterialMesh2dBundle},
+    sprite::{Anchor},
 };
 
 use crate::game::{
@@ -10,7 +10,6 @@ use crate::game::{
     global::{get_falling_speed, BLOCK_SIZE},
     matrix::Matrix,
     resources::{HoldOnQueueResoure, ImagePathResources, StartPosition},
-    tetromino::{get_block_color, Tetromino, TetrominoType},
     timer::SoftDropTimer,
 };
 
@@ -20,18 +19,18 @@ pub fn spawn_current_tetromino(
     image_resource: Res<ImagePathResources>,
     mut matrix: ResMut<Matrix>,
     mut soft_drop_timer: ResMut<SoftDropTimer>,
-    start_pos: Res<StartPosition>,
+    _start_pos: Res<StartPosition>,
     mut hold_on_queue: ResMut<HoldOnQueueResoure>,
     asset_server: Res<AssetServer>,
     mut texture_atlas: ResMut<Assets<TextureAtlas>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    _meshes: ResMut<Assets<Mesh>>,
+    _materials: ResMut<Assets<ColorMaterial>>,
 ) {
     if !matrix.active {
         return;
     }
 
-    let falling_speed = get_falling_speed(matrix.level);
+    let _falling_speed = get_falling_speed(matrix.level);
 
     soft_drop_timer.timer.reset();
     // soft_drop_timer

@@ -20,7 +20,7 @@ pub fn spawn_board_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let bg: Handle<Image> = asset_server.load("bg.png");
+    let _bg: Handle<Image> = asset_server.load("bg.png");
     // commands.spawn((
     //     SpriteBundle {
     //         sprite: Sprite {
@@ -126,7 +126,7 @@ pub fn spawn_bg_block_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     matrix: Res<Matrix>,
-    mut texture_atlas: ResMut<Assets<TextureAtlas>>,
+    _texture_atlas: ResMut<Assets<TextureAtlas>>,
 ) {
     let block_bg = asset_server.load("black.png");
     // let ta = TextureAtlas::from_grid(
