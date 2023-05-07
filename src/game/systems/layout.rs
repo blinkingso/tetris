@@ -12,7 +12,7 @@ use crate::game::matrix::Matrix;
 use crate::game::style::{
     get_game_label_text_style, get_game_text_style, PAUSED_LAYOUT_BACKGROUND_COLOR, TEXT_FONT_SIZE,
 };
-use crate::ui::components::MainMenu;
+
 use crate::ui::style::{get_text_style, get_title_text_style, BUTTON_STYLE, NORMAL_BUTTON};
 
 /// Spawn game background area.

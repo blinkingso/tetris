@@ -8,7 +8,7 @@ use crate::game::{
     components::{
         Block, CurrentTetromino, GameArea, HoldQueueTetromino, MatrixPosition, UpdateBlock,
     },
-    global::{get_falling_speed, BLOCK_SIZE, BLOCK_SPACE},
+    global::{get_falling_speed, BLOCK_SIZE},
     matrix::Matrix,
     resources::{HoldOnQueueResoure, ImagePathResources},
     timer::SoftDropTimer,

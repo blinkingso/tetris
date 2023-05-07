@@ -1,10 +1,10 @@
 use crate::game::components::{GameOverButtonAction, PausedButtonAction};
 use crate::game::matrix::Matrix;
-use crate::game::resources::{ImagePathResources, StartPosition};
+
 use crate::{AppState, GameState};
 use bevy::app::AppExit;
 use bevy::prelude::*;
-use bevy::transform::commands;
+
 
 pub fn paused_button_actions(
     query: Query<(&Interaction, &PausedButtonAction), (Changed<Interaction>, With<Button>)>,
