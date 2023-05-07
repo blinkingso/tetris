@@ -3,7 +3,9 @@ use bevy::prelude::*;
 use bevy::sprite::MaterialMesh2dBundle;
 
 use crate::game::components::{GameArea, PausedButtonAction, PausedLayout};
-use crate::game::global::{BLOCK_SIZE, BLOCK_SPACE, RIGHT_WIDTH, SEPARATE, WHITESPACE_WIDTH};
+use crate::game::global::{
+    BLOCK_SIZE, BLOCK_SPACE, BORDER_SIZE, RIGHT_WIDTH, SEPARATE, WHITESPACE_WIDTH,
+};
 use crate::game::matrix::Matrix;
 use crate::game::style::{
     get_game_label_text_style, get_game_text_style, PAUSED_LAYOUT_BACKGROUND_COLOR, TEXT_FONT_SIZE,
@@ -19,6 +21,20 @@ pub fn spawn_board_system(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let bg: Handle<Image> = asset_server.load("bg.png");
+    // commands.spawn((
+    //     SpriteBundle {
+    //         sprite: Sprite {
+    //             custom_size: Some(Vec2::new(matrix.width, matrix.height)),
+    //             // color: Color::DARK_GREEN,
+    //             ..default()
+    //         },
+    //         texture: bg,
+    //         transform: Transform::from_xyz(-(SEPARATE + RIGHT_WIDTH / 2.0), 0.0, 0.0),
+    //         ..Default::default()
+    //     },
+    //     GameArea::Left,
+    // ));
+
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes
@@ -27,16 +43,82 @@ pub fn spawn_board_system(
                     matrix.height,
                 ))))
                 .into(),
-            material: materials
-                .add(ColorMaterial {
-                    texture: Some(bg),
-                    ..Default::default()
-                })
-                .into(),
+            material: materials.add(ColorMaterial::from(Color::DARK_GRAY)).into(),
             transform: Transform::from_xyz(-(SEPARATE + RIGHT_WIDTH / 2.0), 0.0, 0.0),
             ..Default::default()
         },
         GameArea::Left,
+    ));
+
+    // Left boarder
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(BORDER_SIZE, matrix.height + 2.0 * BORDER_SIZE)),
+                color: Color::DARK_GRAY,
+                ..default()
+            },
+            transform: Transform::from_xyz(
+                -(SEPARATE + RIGHT_WIDTH / 2.0 + BORDER_SIZE / 2.0 + matrix.width / 2.0),
+                0.0,
+                0.0,
+            ),
+            ..Default::default()
+        },
+        GameArea::LeftBorder,
+    ));
+    // Right Border
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(BORDER_SIZE, matrix.height + 2.0 * BORDER_SIZE)),
+                color: Color::DARK_GRAY,
+                ..default()
+            },
+            transform: Transform::from_xyz(
+                matrix.width / 2.0 + BORDER_SIZE / 2.0 - SEPARATE - RIGHT_WIDTH / 2.0,
+                0.0,
+                0.0,
+            ),
+            ..Default::default()
+        },
+        GameArea::RightBorder,
+    ));
+
+    // Top Border
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(matrix.width + 2.0 * BORDER_SIZE, BORDER_SIZE)),
+                color: Color::DARK_GRAY,
+                ..default()
+            },
+            transform: Transform::from_xyz(
+                -SEPARATE - RIGHT_WIDTH / 2.0,
+                matrix.height / 2.0 + BORDER_SIZE / 2.0,
+                0.0,
+            ),
+            ..Default::default()
+        },
+        GameArea::TopBorder,
+    ));
+
+    // Bottom border
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(matrix.width + BORDER_SIZE * 2.0, BORDER_SIZE)),
+                color: Color::DARK_GRAY,
+                ..default()
+            },
+            transform: Transform::from_xyz(
+                -SEPARATE - RIGHT_WIDTH / 2.0,
+                -matrix.height / 2.0 - BORDER_SIZE / 2.0,
+                0.0,
+            ),
+            ..Default::default()
+        },
+        GameArea::BottomBorder,
     ));
 }
 
@@ -44,8 +126,17 @@ pub fn spawn_bg_block_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     matrix: Res<Matrix>,
+    mut texture_atlas: ResMut<Assets<TextureAtlas>>,
 ) {
     let block_bg = asset_server.load("black.png");
+    // let ta = TextureAtlas::from_grid(
+    //     block_bg,
+    //     Vec2::new(BLOCK_SIZE, BLOCK_SIZE),
+    //     1,
+    //     1,
+    //     None,
+    //     None,
+    // );
     let mut bundles = vec![];
     for i in 0..matrix.field_width {
         for j in 0..matrix.field_height {
@@ -69,6 +160,21 @@ pub fn spawn_bg_block_system(
                 },
                 GameArea::Block,
             ));
+            // bundles.push(SpriteSheetBundle {
+            //     sprite: TextureAtlasSprite {
+            //         custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+            //         ..default()
+            //     },
+            //     texture_atlas: texture_atlas.add(ta.clone()).into(),
+            //     transform: Transform::from_xyz(
+            //         -(SEPARATE + RIGHT_WIDTH / 2.0) - matrix.width / 2.0
+            //             + i as f32 * (BLOCK_SIZE + BLOCK_SPACE)
+            //             + BLOCK_SIZE / 2.0,
+            //         matrix.height / 2.0 - j as f32 * (BLOCK_SIZE + BLOCK_SPACE) - BLOCK_SIZE / 2.0,
+            //         0.0,
+            //     ),
+            //     ..default()
+            // });
         }
     }
     commands.spawn_batch(bundles.into_iter());

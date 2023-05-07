@@ -2,7 +2,9 @@
 
 use crate::game::tetromino::TetrominoType;
 use bevy::prelude::{Plugin, Resource};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, LinkedList};
+
+use super::{components::MatrixPosition, matrix::Matrix, tetromino::Tetromino};
 
 #[derive(Resource)]
 pub struct ImagePathResources(BTreeMap<TetrominoType, &'static str>);
@@ -44,4 +46,53 @@ impl ImagePathResources {
 pub struct Score {
     pub value: usize,
     pub cleared_lines: HashMap<&'static str, u32>,
+}
+
+#[derive(Resource)]
+pub struct StartPosition(pub MatrixPosition);
+
+#[derive(Resource)]
+pub struct HoldOnQueueResoure {
+    pub start_pos: MatrixPosition,
+    pub values: LinkedList<Tetromino>,
+}
+
+impl HoldOnQueueResoure {
+    pub fn new(start_position: &StartPosition) -> Self {
+        let mut values = LinkedList::new();
+        for _ in 0..5 {
+            let new = Tetromino::new(start_position.0.clone());
+            values.push_back(new);
+        }
+        HoldOnQueueResoure {
+            start_pos: start_position.0.clone(),
+            values,
+        }
+    }
+
+    pub fn pop_push(&mut self) -> Tetromino {
+        let new = Tetromino::new(self.start_pos);
+        return if self.values.is_empty() {
+            new
+        } else {
+            self.values.push_back(new);
+            self.values.pop_front().unwrap()
+        };
+    }
+}
+
+pub enum ScoreAction {
+    Single,
+    Double,
+    Triple,
+    Tetris,
+    MiniTSpin,
+    MiniTSpinSingle,
+    TSpin,
+    TSpinSingle,
+    TSpinDouble,
+    TSpinTriple,
+    BackToBackBonus,
+    SoftDrop(usize),
+    HardDrop(usize),
 }

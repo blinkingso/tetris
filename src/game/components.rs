@@ -18,6 +18,10 @@ pub enum GameArea {
     Block,
     HoldOnQueue,
     Left,
+    LeftBorder,
+    RightBorder,
+    TopBorder,
+    BottomBorder,
     TextArea,
     TextScore,
     TextLevel,
@@ -33,14 +37,19 @@ pub struct CurrentTetromino;
 #[derive(Component)]
 pub struct HoldQueueTetromino;
 
-#[derive(Component)]
+#[derive(Clone, Copy, Component)]
 pub struct MatrixPosition {
     pub x: i32,
     pub y: i32,
 }
 
 #[derive(Component)]
-pub struct MinoBlock;
+pub struct MinoBlock {
+    pub position: MatrixPosition,
+}
 
 #[derive(Component)]
 pub struct UpdateMinoBlock;
+
+#[derive(Component)]
+pub struct TetrominoPosition(pub MatrixPosition);

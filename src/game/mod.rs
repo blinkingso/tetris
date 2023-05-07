@@ -10,10 +10,12 @@ mod global;
 mod style;
 
 use self::{
-    components::{GameArea, GameDisplay, PausedLayout},
+    components::{GameArea, GameDisplay, MatrixPosition, PausedLayout},
     matrix::Matrix,
+    resources::{HoldOnQueueResoure, StartPosition},
     systems::{
         interactions::paused_button_actions,
+        minos::spawn_current_tetromino,
         paused::{is_game_resumed_or_new, is_game_resumed_or_new_or_paused},
     },
 };
@@ -27,6 +29,10 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         // init matrix;
         let matrix = Matrix::default();
+        let start_pos = StartPosition(MatrixPosition { x: 4, y: 0 });
+        let hold_on_queue = HoldOnQueueResoure::new(&start_pos);
+        app.insert_resource(start_pos);
+        app.insert_resource(hold_on_queue);
         app.insert_resource(matrix);
         // init game page
         app.add_system(setup_game::setup_game.in_schedule(OnEnter(GameState::New)));
@@ -45,6 +51,13 @@ impl Plugin for GamePlugin {
         // despawn game page when exit
         app.add_system(despawn_components::<GameDisplay>.in_schedule(OnExit(AppState::Game)));
         app.add_system(despawn_components::<GameArea>.in_schedule(OnExit(AppState::Game)));
+
+        // spawn current_tetromino
+        app.add_system(
+            spawn_current_tetromino
+                .in_set(OnUpdate(AppState::Game))
+                .run_if(is_game_resumed_or_new),
+        );
 
         // movement in game state with new or resumed
         app.add_system(
