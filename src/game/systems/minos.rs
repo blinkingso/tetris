@@ -34,11 +34,6 @@ pub fn spawn_current_tetromino(
     soft_drop_timer
         .timer
         .set_duration(Duration::from_secs_f32(falling_speed));
-    soft_drop_timer.timer.reset();
-
-    soft_drop_timer
-        .timer
-        .set_elapsed(Duration::from_secs_f32(falling_speed));
 
     let tetromino = hold_on_queue.pop_push();
     let image = asset_server.load(image_resource.get_path(tetromino.ty));
