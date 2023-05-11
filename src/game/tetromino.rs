@@ -1,6 +1,6 @@
 //! Tetrominos Definition
 
-use bevy::prelude::Color;
+use bevy::prelude::{Color, Component};
 use rand::{distributions::Standard, prelude::Distribution, Rng};
 
 use super::components::{Block, MatrixPosition};
@@ -192,50 +192,41 @@ impl Distribution<Rotation> for Standard {
     }
 }
 
+#[derive(Clone, Component)]
 pub struct Tetromino {
     pub position: MatrixPosition,
     pub ty: TetrominoType,
     pub rotation: Rotation,
     pub pieces_data: Vec<u8>,
-    pub offset_data: Vec<i8>,
 }
 
 impl Tetromino {
     /// Create a new Tetromino
     pub fn new(position: MatrixPosition) -> Tetromino {
         let ty: TetrominoType = rand::random();
+        let offset_data = match ty {
+            TetrominoType::I => OFFSET_DATA_I.to_vec(),
+            TetrominoType::O => OFFSET_DATA_O.to_vec(),
+            _ => OFFSET_DATA_JLSTZ.to_vec(),
+        };
         Tetromino {
             position,
             ty,
             rotation: Rotation::R0,
             pieces_data: get_pieces_data(ty),
-            offset_data: get_offset_data(Rotation::R0, ty),
-        }
-    }
-
-    /// Create a new Tetromino
-    pub fn new_with_ty(position: MatrixPosition, ty: TetrominoType) -> Tetromino {
-        Tetromino {
-            position,
-            ty,
-            rotation: Rotation::R0,
-            pieces_data: get_pieces_data(ty),
-            offset_data: get_offset_data(Rotation::R0, ty),
         }
     }
 
     /// Get all tetromino blocks in separate model.
-    pub fn get_blocks(&self) -> Vec<Block> {
+    pub fn get_blocks_position(&self) -> Vec<MatrixPosition> {
         let row = (self.pieces_data.len() as f32).sqrt() as usize;
         self.pieces_data
             .iter()
             .enumerate()
             .filter_map(|(index, val)| if *val != 0 { Some(index) } else { None })
-            .map(|index| Block {
-                position: MatrixPosition {
-                    x: (index % row) as i32,
-                    y: (index / row) as i32,
-                },
+            .map(|index| MatrixPosition {
+                x: (index % row) as i32,
+                y: (index / row) as i32,
             })
             .collect()
     }

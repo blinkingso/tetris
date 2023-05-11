@@ -10,7 +10,9 @@ mod global;
 mod style;
 
 use self::{
-    components::{Block, GameArea, GameDisplay, GameOverLayout, MatrixPosition, PausedLayout},
+    components::{
+        Block, GameArea, GameDisplay, GameOverLayout, HeapCounter, MatrixPosition, PausedLayout,
+    },
     matrix::Matrix,
     resources::{HoldOnQueueResoure, StartPosition},
     systems::{
@@ -33,6 +35,7 @@ impl Plugin for GamePlugin {
         app.insert_resource(start_pos);
         app.insert_resource(hold_on_queue);
         app.insert_resource(matrix);
+        app.insert_resource(HeapCounter(0));
         // init game page
         app.add_system(setup_game::setup_game.in_schedule(OnEnter(GameState::New)));
         // enter game over page
@@ -60,21 +63,31 @@ impl Plugin for GamePlugin {
                 .run_if(is_game_resumed_or_new),
         );
 
-        // update tetromino blocks
-        app.add_system(
-            update_block_system
-                .in_set(OnUpdate(AppState::Game))
-                .run_if(is_game_resumed_or_new),
-        );
-
         // movement in game state with new or resumed
         app.add_system(
-            movement::movement_vertical_system
+            movement::move_vertical_system
                 .in_set(OnUpdate(AppState::Game))
                 .run_if(is_game_resumed_or_new),
         );
         app.add_system(
             movement::move_horizontal_system
+                .in_set(OnUpdate(AppState::Game))
+                .run_if(is_game_resumed_or_new),
+        );
+        app.add_system(
+            rotation::rotate_system
+                .in_set(OnUpdate(AppState::Game))
+                .run_if(is_game_resumed_or_new),
+        );
+
+        app.add_system(
+            minos::clear_lines_system
+                .in_set(OnUpdate(AppState::Game))
+                .run_if(is_game_resumed_or_new),
+        );
+        // update tetromino blocks
+        app.add_system(
+            update_block_system
                 .in_set(OnUpdate(AppState::Game))
                 .run_if(is_game_resumed_or_new),
         );

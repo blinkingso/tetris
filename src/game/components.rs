@@ -1,4 +1,8 @@
-use bevy::prelude::Component;
+use std::ops::Add;
+
+use bevy::prelude::*;
+
+use super::{global::BLOCK_SIZE, matrix::Matrix, tetromino::Tetromino};
 
 #[derive(Component)]
 pub struct PausedLayout;
@@ -39,14 +43,13 @@ pub enum GameArea {
     TextLevelLabel,
     TextLinesLabel,
 }
-
 #[derive(Component)]
 pub struct CurrentTetromino;
 
 #[derive(Component)]
 pub struct HoldQueueTetromino;
 
-#[derive(Clone, Copy, Component)]
+#[derive(Debug, Clone, Copy, Component)]
 pub struct MatrixPosition {
     pub x: i32,
     pub y: i32,
@@ -65,3 +68,60 @@ pub struct TetrominoPosition(pub MatrixPosition);
 
 #[derive(Component)]
 pub struct HeapBlock;
+
+#[derive(Resource)]
+pub struct HeapCounter(pub usize);
+
+#[derive(Bundle)]
+pub struct BlockBundle {
+    pub block: Block,
+
+    #[bundle]
+    sprite: SpriteSheetBundle,
+}
+
+impl Add<MatrixPosition> for MatrixPosition {
+    type Output = MatrixPosition;
+    fn add(self, rhs: MatrixPosition) -> Self::Output {
+        MatrixPosition {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl BlockBundle {
+    ///
+    /// Create a new BlockBundle
+    /// * start_postion: Tetromino position at Matrix
+    /// * rel_position: Block position relative to Tetromino position
+    /// * matrix: Matrix resource of the global game.
+    ///
+    pub fn new(
+        start_position: MatrixPosition,
+        rel_position: MatrixPosition,
+        matrix: &Matrix,
+        path: &'static str,
+        asset_server: &AssetServer,
+        texture_atlas_res: &mut Assets<TextureAtlas>,
+    ) -> Self {
+        let texture = asset_server.load(path);
+        let texture_atlas =
+            TextureAtlas::from_grid(texture, Vec2::new(BLOCK_SIZE, BLOCK_SIZE), 1, 1, None, None);
+        let position = start_position + rel_position;
+        let (x, y) = matrix.get_translation(position);
+        BlockBundle {
+            block: Block { position },
+            sprite: SpriteSheetBundle {
+                sprite: TextureAtlasSprite {
+                    custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                    anchor: bevy::sprite::Anchor::TopLeft,
+                    ..default()
+                },
+                texture_atlas: texture_atlas_res.add(texture_atlas).into(),
+                transform: Transform::from_xyz(x, y, 0.0),
+                ..default()
+            },
+        }
+    }
+}

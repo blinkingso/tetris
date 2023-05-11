@@ -2,8 +2,8 @@
 
 use super::resources::ScoreAction;
 
-pub const FIELD_WIDTH: u32 = 10;
-pub const FIELD_HEIGHT: u32 = 22;
+pub const FIELD_WIDTH: usize = 10;
+pub const FIELD_HEIGHT: usize = 22;
 pub const BLOCK_SIZE: f32 = 40.0;
 pub const BORDER_SIZE: f32 = 16.0;
 
