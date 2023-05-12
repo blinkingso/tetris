@@ -3,9 +3,9 @@
 use bevy::prelude::{Color, Component};
 use rand::{distributions::Standard, prelude::Distribution, Rng};
 
-use super::components::{Block, MatrixPosition};
+use super::components::MatrixPosition;
 
-const SHAPE_I: [[u8; 4]; 4] = [[1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+const SHAPE_I: [[u8; 4]; 4] = [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]];
 
 type Tt = [[u8; 3]; 3];
 
@@ -194,7 +194,6 @@ impl Distribution<Rotation> for Standard {
 
 #[derive(Clone, Component)]
 pub struct Tetromino {
-    pub position: MatrixPosition,
     pub ty: TetrominoType,
     pub rotation: Rotation,
     pub pieces_data: Vec<u8>,
@@ -202,15 +201,14 @@ pub struct Tetromino {
 
 impl Tetromino {
     /// Create a new Tetromino
-    pub fn new(position: MatrixPosition) -> Tetromino {
+    pub fn new() -> Tetromino {
         let ty: TetrominoType = rand::random();
-        let offset_data = match ty {
+        let _offset_data = match ty {
             TetrominoType::I => OFFSET_DATA_I.to_vec(),
             TetrominoType::O => OFFSET_DATA_O.to_vec(),
             _ => OFFSET_DATA_JLSTZ.to_vec(),
         };
         Tetromino {
-            position,
             ty,
             rotation: Rotation::R0,
             pieces_data: get_pieces_data(ty),

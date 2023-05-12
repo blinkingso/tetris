@@ -7,7 +7,7 @@ use crate::game::global::{BLOCK_SIZE, BLOCK_SPACE};
 use super::{
     components::MatrixPosition,
     global::{get_matrix_size, FIELD_HEIGHT, FIELD_WIDTH, RIGHT_WIDTH, SEPARATE},
-    tetromino::{self, get_offset_data, Tetromino},
+    tetromino::{get_offset_data, Tetromino},
 };
 
 #[derive(Resource)]
@@ -21,8 +21,8 @@ pub struct Matrix {
     pub hard_dropping: bool,
     pub level: usize,
     pub game_over: bool,
-    pub line_clearing: bool,
     pub lines_cleared: usize,
+    pub start_pos: MatrixPosition,
 }
 
 impl Default for Matrix {
@@ -42,17 +42,21 @@ impl Default for Matrix {
             hard_dropping: false,
             level: 1,
             game_over: false,
-            line_clearing: false,
             lines_cleared: 0,
+            start_pos: MatrixPosition { x: 3, y: 0 },
         }
     }
 }
 
 impl Matrix {
+    pub fn reset_start_pos(&mut self) {
+        self.start_pos = MatrixPosition { x: 3, y: 0 };
+    }
     pub fn get_index(&self, pos: &MatrixPosition) -> usize {
         (pos.x + pos.y * self.field_width as i32) as usize
     }
-    pub fn is_collision(&self, pos: &MatrixPosition) -> bool {
+
+    pub fn check_collision(&self, pos: &MatrixPosition) -> bool {
         if pos.x < 0 || pos.x > self.field_width as i32 - 1 || pos.y > self.field_height as i32 - 1
         {
             return true;
@@ -76,7 +80,11 @@ impl Matrix {
     }
 
     /// Check if current tetromino can rotate or not, return New Tetromino if allowed.
-    pub fn can_rotate(&self, direction: i32, current_tetromino: &Tetromino) -> Option<Tetromino> {
+    pub fn can_rotate(
+        &mut self,
+        direction: i32,
+        current_tetromino: &Tetromino,
+    ) -> Option<Tetromino> {
         let (new_rotation, clockwise) = if direction >= 0 {
             // clockwise
             (current_tetromino.rotation.clockwise(), true)
@@ -86,20 +94,19 @@ impl Matrix {
         };
         // rotate tetromino-matrix and get blocks's new position
         let new_pieces_data = self.rotate(&current_tetromino.pieces_data, clockwise);
-        let mut new_tetromino = Tetromino {
+        let new_tetromino = Tetromino {
             pieces_data: new_pieces_data,
             rotation: new_rotation,
-            position: current_tetromino.position,
             ty: current_tetromino.ty,
         };
 
         let mut collision = false;
         for pos in new_tetromino.get_blocks_position().iter() {
             let m_pos = MatrixPosition {
-                x: current_tetromino.position.x + pos.x,
-                y: current_tetromino.position.y + pos.y,
+                x: self.start_pos.x + pos.x,
+                y: self.start_pos.y + pos.y,
             };
-            if self.is_collision(&m_pos) {
+            if self.check_collision(&m_pos) {
                 collision = true;
             }
         }
@@ -119,8 +126,8 @@ impl Matrix {
             let n_y = new_offsets[i + 1];
             let (x, y) = (o_x - n_x, o_y - n_y);
             let new_start_pos = MatrixPosition {
-                x: current_tetromino.position.x + x as i32,
-                y: current_tetromino.position.y + y as i32,
+                x: self.start_pos.x + x as i32,
+                y: self.start_pos.y + y as i32,
             };
 
             let blocks = new_tetromino.get_blocks_position();
@@ -130,13 +137,13 @@ impl Matrix {
                     x: new_start_pos.x + pos.x,
                     y: new_start_pos.y + pos.y,
                 };
-                if self.is_collision(&m_pos) {
+                if self.check_collision(&m_pos) {
                     collision = true;
                 }
             }
 
             if !collision {
-                new_tetromino.position = new_start_pos;
+                self.start_pos = new_start_pos;
                 return Some(new_tetromino);
             }
         }

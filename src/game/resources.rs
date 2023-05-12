@@ -1,7 +1,7 @@
 //! Resources definitions.
 
 use crate::game::tetromino::TetrominoType;
-use bevy::prelude::{Plugin, Resource};
+use bevy::prelude::{Event, Plugin, Resource};
 use std::collections::{BTreeMap, HashMap, LinkedList};
 
 use super::{components::MatrixPosition, tetromino::Tetromino};
@@ -45,7 +45,21 @@ impl ImagePathResources {
 #[derive(Resource)]
 pub struct Score {
     pub value: usize,
-    pub cleared_lines: HashMap<&'static str, u32>,
+    pub cleared_lines: HashMap<ScoreAction, usize>,
+}
+impl Default for Score {
+    fn default() -> Self {
+        Score {
+            value: 0,
+            cleared_lines: HashMap::new(),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct ScoreEvent {
+    pub action: ScoreAction,
+    pub cleared_lines: usize,
 }
 
 #[derive(Resource)]
@@ -58,20 +72,17 @@ pub struct HoldOnQueueResoure {
 }
 
 impl HoldOnQueueResoure {
-    pub fn new(start_position: &StartPosition) -> Self {
+    pub fn new(start_pos: MatrixPosition) -> Self {
         let mut values = LinkedList::new();
         for _ in 0..5 {
-            let new = Tetromino::new(start_position.0.clone());
+            let new = Tetromino::new();
             values.push_front(new);
         }
-        HoldOnQueueResoure {
-            start_pos: start_position.0.clone(),
-            values,
-        }
+        HoldOnQueueResoure { start_pos, values }
     }
 
     pub fn pop_push(&mut self) -> Tetromino {
-        let new = Tetromino::new(self.start_pos);
+        let new = Tetromino::new();
         let value = self.values.pop_front();
         self.values.push_back(new);
         value.unwrap()
@@ -82,6 +93,7 @@ impl HoldOnQueueResoure {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ScoreAction {
     Single,
     Double,
@@ -96,4 +108,16 @@ pub enum ScoreAction {
     BackToBackBonus,
     SoftDrop(usize),
     HardDrop(usize),
+}
+
+impl From<usize> for ScoreAction {
+    fn from(value: usize) -> Self {
+        match value {
+            1 => Self::Single,
+            2 => Self::Double,
+            3 => Self::Triple,
+            4 => Self::Tetris,
+            _ => unreachable!(),
+        }
+    }
 }

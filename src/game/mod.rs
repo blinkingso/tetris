@@ -14,10 +14,11 @@ use self::{
         Block, GameArea, GameDisplay, GameOverLayout, HeapCounter, MatrixPosition, PausedLayout,
     },
     matrix::Matrix,
-    resources::{HoldOnQueueResoure, StartPosition},
+    resources::{HoldOnQueueResoure, Score, ScoreEvent, StartPosition},
     systems::{
         interactions::{game_over_button_actions, paused_button_actions},
         minos::{spawn_current_tetromino, update_block_system},
+        movement::contain_cleared_lines,
         paused::{is_game_resumed_or_new, is_game_resumed_or_new_or_paused},
     },
 };
@@ -30,12 +31,12 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         let matrix = Matrix::default();
-        let start_pos = StartPosition(MatrixPosition { x: 3, y: 0 });
-        let hold_on_queue = HoldOnQueueResoure::new(&start_pos);
-        app.insert_resource(start_pos);
+        let hold_on_queue = HoldOnQueueResoure::new(matrix.start_pos);
+        app.insert_resource(Score::default());
         app.insert_resource(hold_on_queue);
         app.insert_resource(matrix);
         app.insert_resource(HeapCounter(0));
+        app.add_event::<ScoreEvent>();
         // init game page
         app.add_system(setup_game::setup_game.in_schedule(OnEnter(GameState::New)));
         // enter game over page
@@ -65,23 +66,18 @@ impl Plugin for GamePlugin {
 
         // movement in game state with new or resumed
         app.add_system(
-            movement::move_vertical_system
-                .in_set(OnUpdate(AppState::Game))
-                .run_if(is_game_resumed_or_new),
-        );
-        app.add_system(
-            movement::move_horizontal_system
-                .in_set(OnUpdate(AppState::Game))
-                .run_if(is_game_resumed_or_new),
-        );
-        app.add_system(
-            rotation::rotate_system
+            movement::movement_system
                 .in_set(OnUpdate(AppState::Game))
                 .run_if(is_game_resumed_or_new),
         );
 
         app.add_system(
-            minos::clear_lines_system
+            score::update_score
+                .in_set(OnUpdate(AppState::Game))
+                .run_if(is_game_resumed_or_new),
+        );
+        app.add_system(
+            score::update_level
                 .in_set(OnUpdate(AppState::Game))
                 .run_if(is_game_resumed_or_new),
         );

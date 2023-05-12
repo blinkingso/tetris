@@ -2,7 +2,7 @@ use std::ops::Add;
 
 use bevy::prelude::*;
 
-use super::{global::BLOCK_SIZE, matrix::Matrix, tetromino::Tetromino};
+use super::{global::BLOCK_SIZE, matrix::Matrix};
 
 #[derive(Component)]
 pub struct PausedLayout;
@@ -26,7 +26,7 @@ pub enum GameOverButtonAction {
 #[derive(Component)]
 pub struct GameDisplay;
 
-#[derive(Component)]
+#[derive(Component, PartialEq, Eq)]
 pub enum GameArea {
     Block,
     HoldOnQueue,
@@ -67,7 +67,7 @@ pub struct UpdateBlock;
 pub struct TetrominoPosition(pub MatrixPosition);
 
 #[derive(Component)]
-pub struct HeapBlock;
+pub struct LockedDownBlock;
 
 #[derive(Resource)]
 pub struct HeapCounter(pub usize);
