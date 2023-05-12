@@ -28,7 +28,7 @@ pub struct Matrix {
 impl Default for Matrix {
     fn default() -> Self {
         let (width, height) = get_matrix_size();
-        let mut occupation = Vec::with_capacity(FIELD_WIDTH as usize * FIELD_HEIGHT as usize);
+        let mut occupation = Vec::with_capacity(FIELD_WIDTH * FIELD_HEIGHT);
         for _i in 0..occupation.capacity() {
             occupation.push(0u8);
         }

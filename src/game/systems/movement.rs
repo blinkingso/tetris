@@ -4,33 +4,13 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 use crate::game::{
-    components::{Block, CurrentTetromino, LockedDownBlock, MatrixPosition, UpdateBlock},
+    components::{Block, CurrentTetromino, LockedDownBlock, UpdateBlock},
     global::HARD_DROP_SPEED,
     matrix::Matrix,
     tetromino::Tetromino,
     timer::SoftDropTimer,
     GameState,
 };
-
-pub fn contain_cleared_lines(matrix: Res<Matrix>) -> bool {
-    let mut y = matrix.field_height - 1;
-    while y > 0 {
-        let mut full_row = true;
-        for i in 0..matrix.field_width {
-            let index = matrix.field_width * y + i;
-            if matrix.occupation[index] == 0 {
-                full_row = false;
-            }
-        }
-
-        if full_row {
-            return true;
-        } else {
-            y -= 1;
-        }
-    }
-    false
-}
 
 pub fn movement_system(
     mut commands: Commands,

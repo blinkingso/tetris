@@ -118,7 +118,7 @@ pub fn spawn_current_tetromino(
             .insert(CurrentTetromino);
     }
     // spawn current tetromino
-    commands.spawn(tetromino.clone()).insert(CurrentTetromino);
+    commands.spawn(tetromino).insert(CurrentTetromino);
 
     // despawn poped tetromino in the hold_on_queue.
     for entity in query_hold_on_queue.iter() {

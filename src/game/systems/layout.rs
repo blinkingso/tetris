@@ -46,7 +46,7 @@ pub fn spawn_board_system(
                     matrix.height,
                 ))))
                 .into(),
-            material: materials.add(ColorMaterial::from(Color::DARK_GRAY)).into(),
+            material: materials.add(ColorMaterial::from(Color::DARK_GRAY)),
             transform: Transform::from_xyz(-(SEPARATE + RIGHT_WIDTH / 2.0), 0.0, 0.0),
             ..Default::default()
         },
@@ -202,12 +202,10 @@ pub fn spawn_right_system(
                     RIGHT_WIDTH,
                 ))))
                 .into(),
-            material: materials
-                .add(ColorMaterial {
-                    texture: Some(bg.clone()),
-                    ..default()
-                })
-                .into(),
+            material: materials.add(ColorMaterial {
+                texture: Some(bg.clone()),
+                ..default()
+            }),
             transform: Transform::from_xyz(
                 SEPARATE + RIGHT_WIDTH / 2.0 + WHITESPACE_WIDTH,
                 matrix.height / 2.0 - RIGHT_WIDTH / 2.0,
@@ -226,12 +224,10 @@ pub fn spawn_right_system(
                     BLOCK_SIZE * 4.0,
                 ))))
                 .into(),
-            material: materials
-                .add(ColorMaterial {
-                    texture: Some(bg.clone()),
-                    ..default()
-                })
-                .into(),
+            material: materials.add(ColorMaterial {
+                texture: Some(bg.clone()),
+                ..default()
+            }),
             transform: Transform::from_xyz(
                 SEPARATE + RIGHT_WIDTH / 2.0 + WHITESPACE_WIDTH,
                 -matrix.height / 2.0 + BLOCK_SIZE * 2.0 + SEPARATE * 2.0 + 8.0 * BLOCK_SIZE,
@@ -280,12 +276,10 @@ pub fn spawn_right_system(
                     BLOCK_SIZE * 4.0,
                 ))))
                 .into(),
-            material: materials
-                .add(ColorMaterial {
-                    texture: Some(bg.clone()),
-                    ..default()
-                })
-                .into(),
+            material: materials.add(ColorMaterial {
+                texture: Some(bg.clone()),
+                ..default()
+            }),
             transform: Transform::from_xyz(
                 SEPARATE + RIGHT_WIDTH / 2.0 + WHITESPACE_WIDTH,
                 -matrix.height / 2.0 + BLOCK_SIZE * 2.0 + SEPARATE + 4.0 * BLOCK_SIZE,
@@ -332,12 +326,10 @@ pub fn spawn_right_system(
                     BLOCK_SIZE * 4.0,
                 ))))
                 .into(),
-            material: materials
-                .add(ColorMaterial {
-                    texture: Some(bg.clone()),
-                    ..default()
-                })
-                .into(),
+            material: materials.add(ColorMaterial {
+                texture: Some(bg),
+                ..default()
+            }),
             transform: Transform::from_xyz(
                 SEPARATE + RIGHT_WIDTH / 2.0 + WHITESPACE_WIDTH,
                 -matrix.height / 2.0 + BLOCK_SIZE * 2.0,

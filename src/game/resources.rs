@@ -1,7 +1,7 @@
 //! Resources definitions.
 
 use crate::game::tetromino::TetrominoType;
-use bevy::prelude::{Event, Plugin, Resource};
+use bevy::prelude::{Plugin, Resource};
 use std::collections::{BTreeMap, HashMap, LinkedList};
 
 use super::{components::MatrixPosition, tetromino::Tetromino};
@@ -30,30 +30,12 @@ impl ImagePathResources {
     pub fn get_path(&self, ty: TetrominoType) -> &'static str {
         self.0.get(&ty).unwrap()
     }
-
-    /// A function to return background Image `Path`
-    pub fn get_black(&self) -> &'static str {
-        "black.png"
-    }
-
-    /// A function to get collections of resources
-    pub fn hgetall(&self) -> &BTreeMap<TetrominoType, &'static str> {
-        &self.0
-    }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct Score {
     pub value: usize,
     pub cleared_lines: HashMap<ScoreAction, usize>,
-}
-impl Default for Score {
-    fn default() -> Self {
-        Score {
-            value: 0,
-            cleared_lines: HashMap::new(),
-        }
-    }
 }
 
 #[derive(Clone)]

@@ -1,6 +1,6 @@
 //! Tetrominos Definition
 
-use bevy::prelude::{Color, Component};
+use bevy::prelude::Component;
 use rand::{distributions::Standard, prelude::Distribution, Rng};
 
 use super::components::MatrixPosition;
@@ -38,14 +38,6 @@ const OFFSET_DATA_O: [i8; 8] = [0, 0, 0, -1, -1, -1, -1, 0];
 
 pub fn array_to_vec<const R: usize>(array: [[u8; R]; R]) -> Vec<u8> {
     array.into_iter().flatten().collect()
-}
-
-pub fn vec_to_array(vec: Vec<u8>) -> Vec<Vec<u8>> {
-    let len = vec.len();
-    let row_len = (len as f32).sqrt() as usize;
-
-    let chunks = vec.as_slice().chunks_exact(row_len);
-    chunks.into_iter().map(|slice| slice.to_vec()).collect()
 }
 
 pub fn get_pieces_data(ty: TetrominoType) -> Vec<u8> {
@@ -123,20 +115,6 @@ impl From<i32> for TetrominoType {
             _ => TetrominoType::O,
         }
     }
-}
-
-pub const BLOCK_COLORS: [Color; 7] = [
-    Color::RED,
-    Color::ORANGE,
-    Color::YELLOW,
-    Color::GREEN,
-    Color::CYAN,
-    Color::BLUE,
-    Color::PURPLE,
-];
-
-pub fn get_block_color(ty: TetrominoType) -> Color {
-    BLOCK_COLORS[ty as usize]
 }
 
 impl Distribution<TetrominoType> for Standard {

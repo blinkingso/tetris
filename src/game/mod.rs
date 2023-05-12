@@ -10,15 +10,12 @@ mod global;
 mod style;
 
 use self::{
-    components::{
-        Block, GameArea, GameDisplay, GameOverLayout, HeapCounter, MatrixPosition, PausedLayout,
-    },
+    components::{Block, GameArea, GameDisplay, GameOverLayout, HeapCounter, PausedLayout},
     matrix::Matrix,
-    resources::{HoldOnQueueResoure, Score, ScoreEvent, StartPosition},
+    resources::{HoldOnQueueResoure, Score, ScoreEvent},
     systems::{
         interactions::{game_over_button_actions, paused_button_actions},
         minos::{spawn_current_tetromino, update_block_system},
-        movement::contain_cleared_lines,
         paused::{is_game_resumed_or_new, is_game_resumed_or_new_or_paused},
     },
 };
@@ -118,8 +115,8 @@ impl Plugin for GamePlugin {
 
 #[derive(States, Clone, Copy, PartialEq, Eq, Debug, Default, Hash)]
 pub enum GameState {
-    None,
     #[default]
+    None,
     New,
     Resume,
     Paused,

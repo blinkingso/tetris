@@ -118,7 +118,7 @@ impl BlockBundle {
                     anchor: bevy::sprite::Anchor::TopLeft,
                     ..default()
                 },
-                texture_atlas: texture_atlas_res.add(texture_atlas).into(),
+                texture_atlas: texture_atlas_res.add(texture_atlas),
                 transform: Transform::from_xyz(x, y, 0.0),
                 ..default()
             },

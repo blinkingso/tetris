@@ -40,8 +40,8 @@ pub fn despawn_components<T: Component>(query: Query<Entity, With<T>>, mut comma
 /// Game State
 #[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
 pub enum AppState {
-    MainMenu,
     #[default]
+    MainMenu,
     Game,
     GameOver,
 }
