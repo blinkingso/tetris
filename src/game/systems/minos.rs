@@ -35,7 +35,7 @@ pub fn spawn_current_tetromino(
 
     // From last line to first
     let mut y = matrix.field_height - 1;
-    let mut full_rows = 0;
+    let mut full_rows = vec![];
     while y > 0 {
         let mut full_row = true;
         for i in 0..matrix.field_width {
@@ -46,17 +46,36 @@ pub fn spawn_current_tetromino(
         }
 
         if full_row {
-            matrix.print();
-            full_rows += 1;
-            // clear line
+            full_rows.push(y);
+        }
+        y -= 1;
+    }
+
+    if full_rows.len() > 0 {
+        // clear line
+        let max_row = full_rows.iter().max().unwrap();
+        for _ in full_rows.iter() {
             for (entity, mut block) in heap_blocks.iter_mut() {
-                match (y as i32).cmp(&block.position.y) {
+                match (*max_row as i32).cmp(&block.position.y) {
                     // top -1
                     std::cmp::Ordering::Less => {}
                     // clear
                     std::cmp::Ordering::Equal => {
-                        block.position.x = -1;
-                        commands.entity(entity).despawn_recursive();
+                        if block.position.x != -1 {
+                            block.position.x = -1;
+                            #[cfg(debug_assertions)]
+                            {
+                                println!("-------------------------");
+                                println!(
+                                    "pos:{}, {}, entity id: {:?}",
+                                    block.position.x,
+                                    block.position.y,
+                                    commands.entity(entity).id()
+                                );
+                                println!("-------------------------");
+                            }
+                            commands.entity(entity).despawn_recursive();
+                        }
                     }
                     std::cmp::Ordering::Greater => {
                         block.position.y += 1;
@@ -64,32 +83,35 @@ pub fn spawn_current_tetromino(
                     }
                 }
             }
-            // clear occupation data
-            for j in (1..=y).rev() {
-                for i in 0..matrix.field_width {
-                    let down_row_index = j * matrix.field_width + i;
-                    let up_row_index = (j - 1) * matrix.field_width + i;
-                    matrix.occupation[down_row_index] = matrix.occupation[up_row_index];
-                }
-            }
-
-            // make sure the first line is cleared.
-            for i in 0..matrix.field_width {
-                if matrix.occupation[i] == 1 {
-                    matrix.occupation[i] = 0;
-                }
-            }
-        } else {
-            y -= 1;
         }
-    }
+        let min_y = full_rows.iter().min().unwrap() - 1;
+        // clear occupation data
+        for j in (1..=min_y).rev() {
+            for i in 0..matrix.field_width {
+                let down_row_index = (j + full_rows.len()) * matrix.field_width + i;
+                let up_row_index = j * matrix.field_width + i;
+                matrix.occupation[down_row_index] = matrix.occupation[up_row_index];
+            }
+        }
 
-    if full_rows > 0 {
+        // make sure the first line is cleared.
+        for j in 0..full_rows.len() {
+            for i in 0..matrix.field_width {
+                let index = j * matrix.field_width + i;
+                if matrix.occupation[index] == 1 {
+                    matrix.occupation[index] = 0;
+                }
+            }
+        }
+
         score_writer.send(ScoreEvent {
-            cleared_lines: full_rows,
-            action: ScoreAction::from(full_rows),
+            cleared_lines: full_rows.len(),
+            action: ScoreAction::from(full_rows.len()),
         });
-        matrix.lines_cleared += full_rows;
+        matrix.lines_cleared += full_rows.len();
+    }
+    if matrix.hard_dropping {
+        score_writer.send(ScoreEvent::hard_drop(1));
     }
 
     let falling_speed = get_falling_speed(matrix.level);

@@ -16,6 +16,7 @@ use self::{
     systems::{
         interactions::{game_over_button_actions, paused_button_actions},
         minos::{spawn_current_tetromino, update_block_system},
+        movement::debug_minos,
         paused::{is_game_resumed_or_new, is_game_resumed_or_new_or_paused},
     },
 };
@@ -68,6 +69,13 @@ impl Plugin for GamePlugin {
                 .run_if(is_game_resumed_or_new),
         );
 
+        // debug system
+        #[cfg(debug_assertions)]
+        app.add_system(
+            debug_minos
+                .in_set(OnUpdate(AppState::Game))
+                .run_if(is_game_resumed_or_new),
+        );
         app.add_system(
             score::update_score
                 .in_set(OnUpdate(AppState::Game))

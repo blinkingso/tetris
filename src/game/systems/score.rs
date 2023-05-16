@@ -35,7 +35,7 @@ pub fn update_score(
     mut text: Query<(&mut Text, &GameArea)>,
 ) {
     for ev in read_event.into_iter() {
-        let score = calculate_score(matrix.level, ev.action);
+        let score = calculate_score(matrix.level as i32, ev.action);
         if let Some(cleared_lines) = res_score.cleared_lines.get_mut(&ev.action) {
             *cleared_lines += ev.cleared_lines;
         } else {

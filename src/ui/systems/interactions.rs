@@ -10,6 +10,7 @@ pub(crate) fn main_menu_button_action(
     query: Query<(&Interaction, &MainMenuButtonAction), (Changed<Interaction>, With<Button>)>,
     mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
+    key_code: Res<Input<KeyCode>>,
 ) {
     for (interaction, action) in query.iter() {
         if *interaction == Interaction::Clicked {
@@ -21,6 +22,11 @@ pub(crate) fn main_menu_button_action(
                 MainMenuButtonAction::Exit => writer.send(AppExit),
             }
         }
+    }
+
+    if key_code.just_pressed(KeyCode::Return) {
+        app_state.set(AppState::Game);
+        game_state.set(GameState::New);
     }
 }
 

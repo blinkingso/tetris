@@ -45,7 +45,7 @@ pub fn get_falling_speed(level: usize) -> f32 {
 }
 
 /// Calculate scores
-pub fn calculate_score(level: usize, action: ScoreAction) -> usize {
+pub fn calculate_score(level: i32, action: ScoreAction) -> i32 {
     match action {
         ScoreAction::Single => level * 100,
         ScoreAction::Double => level * 300,

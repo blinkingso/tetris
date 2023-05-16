@@ -34,7 +34,7 @@ impl ImagePathResources {
 
 #[derive(Resource, Default)]
 pub struct Score {
-    pub value: usize,
+    pub value: i32,
     pub cleared_lines: HashMap<ScoreAction, usize>,
 }
 
@@ -42,6 +42,22 @@ pub struct Score {
 pub struct ScoreEvent {
     pub action: ScoreAction,
     pub cleared_lines: usize,
+}
+
+impl ScoreEvent {
+    pub fn soft_drop() -> Self {
+        ScoreEvent {
+            action: ScoreAction::SoftDrop(1),
+            cleared_lines: 0,
+        }
+    }
+
+    pub fn hard_drop(lines: i32) -> Self {
+        ScoreEvent {
+            action: ScoreAction::HardDrop(lines),
+            cleared_lines: 0,
+        }
+    }
 }
 
 #[derive(Resource)]
@@ -88,8 +104,8 @@ pub enum ScoreAction {
     TSpinDouble,
     TSpinTriple,
     BackToBackBonus,
-    SoftDrop(usize),
-    HardDrop(usize),
+    SoftDrop(i32),
+    HardDrop(i32),
 }
 
 impl From<usize> for ScoreAction {

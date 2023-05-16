@@ -7,10 +7,30 @@ use crate::game::{
     components::{Block, CurrentTetromino, LockedDownBlock, UpdateBlock},
     global::HARD_DROP_SPEED,
     matrix::Matrix,
+    resources::ScoreEvent,
     tetromino::Tetromino,
     timer::SoftDropTimer,
     GameState,
 };
+
+pub fn debug_minos(
+    matrix: Res<Matrix>,
+    mut commands: Commands,
+    query: Query<(Entity, &mut Block), With<LockedDownBlock>>,
+) {
+    if matrix.create {
+        println!("**********************************");
+        for (entity, block) in query.iter() {
+            println!(
+                "pos:{}, {}, entity id: {:?}",
+                block.position.x,
+                block.position.y,
+                commands.entity(entity).id()
+            );
+        }
+        println!("=================================");
+    }
+}
 
 pub fn movement_system(
     mut commands: Commands,
@@ -21,6 +41,7 @@ pub fn movement_system(
     mut current_tetromino: Query<(Entity, &mut Tetromino), With<CurrentTetromino>>,
     key_code: Res<Input<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>,
+    mut score_writer: EventWriter<ScoreEvent>,
 ) {
     if matrix.create {
         return;
@@ -59,6 +80,7 @@ pub fn movement_system(
             soft_drop_timer
                 .timer
                 .set_duration(Duration::from_secs_f32(HARD_DROP_SPEED));
+            matrix.hard_dropping = true;
         }
 
         #[cfg(debug_assertions)]
@@ -84,6 +106,14 @@ pub fn movement_system(
         }
 
         // prefered to move y in prioty
+        let max_y = current_minos
+            .iter()
+            .map(|(_, b)| b.position.y)
+            .max()
+            .unwrap_or(matrix.field_height as i32 - 1);
+        // used when hard dropping
+        let mut min_y = max_y;
+
         'piece: for (_entity, block) in current_minos.iter_mut() {
             if block.position.x + desired_x < 0
                 || block.position.x + desired_x > matrix.field_width as i32 - 1
@@ -104,7 +134,7 @@ pub fn movement_system(
             }
 
             if can_move_x && desired_x != 0 {
-                let index = matrix.field_width * (block.position.y) as usize
+                let index = matrix.field_width * block.position.y as usize
                     + (block.position.x + desired_x) as usize;
                 if matrix.occupation[index] == 1 {
                     can_move_x = false;
@@ -133,12 +163,17 @@ pub fn movement_system(
             }
             if can_move_y {
                 matrix.start_pos.y += desired_y;
+                if !matrix.hard_dropping {
+                    score_writer.send(ScoreEvent::soft_drop());
+                } else {
+                    min_y += 1;
+                }
             }
         }
 
         if !can_move_y && desired_y != 0 {
             for (entity, block) in current_minos.iter_mut() {
-                if block.position.y == 2 {
+                if block.position.y == 1 {
                     matrix.game_over = true;
                     matrix.create = false;
                     game_state.set(GameState::Over);
@@ -152,6 +187,8 @@ pub fn movement_system(
             }
 
             if !matrix.game_over {
+                score_writer.send(ScoreEvent::hard_drop(min_y - max_y));
+                matrix.hard_dropping = false;
                 matrix.create = true;
                 matrix.reset_start_pos();
                 commands.entity(entity).despawn_recursive();
